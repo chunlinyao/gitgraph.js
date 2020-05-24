@@ -188,7 +188,7 @@ class GitgraphCore<TNode = SVGElement> {
         ? args.from.name
         : defaultParentBranchName;
       const parentCommitHash =
-        this.refs.getCommit(parentBranchName) ||
+        this.getParentCommit(parentBranchName) ||
         (this.refs.hasCommit(args.from) ? args.from : undefined);
       args.style = args.style || {};
       options = {
@@ -208,10 +208,21 @@ class GitgraphCore<TNode = SVGElement> {
 
     const branch = new Branch<TNode>(options);
     this.branches.set(branch.name, branch);
+    
 
     return branch;
   }
 
+  public getParentCommit(branchName: any): string|undefined {
+    let result = this.refs.getCommit(branchName); 
+    if (!result) {
+      const parentBranch = this.branches.get(branchName)
+      if(parentBranch) {
+        result = parentBranch.parentCommitHash;
+      }
+    }
+    return result;
+  }
   /**
    * Return commits with data for rendering.
    */

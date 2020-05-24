@@ -7,6 +7,7 @@ import {
   GraphContainer,
   hashPrefix,
 } from "../helpers";
+import { Orientation } from "@gitgraph/js";
 
 storiesOf("gitgraph-js/1. Basic usage", module)
   .add("default", () => (
@@ -408,6 +409,27 @@ storiesOf("gitgraph-js/1. Basic usage", module)
         develop.commit();
         master.merge(develop);
         feat1.commit();
+      }}
+    </GraphContainer>
+  ))
+  .add("test branch no commit", () => (
+    <GraphContainer>
+      {(graphContainer) => {
+        const gitgraph = createGitgraph(graphContainer, {
+          generateCommitHash: createFixedHashGenerator(),
+          orientation: Orientation.VerticalReverse,
+        });
+        const master = gitgraph.branch("master").commit("Initial commit");
+        const develop = master.branch("develop")
+        const feature = develop.branch("feature");
+        feature.commit();
+        const feat1 = feature.branch("feat1")
+          .commit()
+          .commit();
+        master.commit();
+        develop.commit();
+        master.merge(develop);
+        master.merge(feat1)
       }}
     </GraphContainer>
   ));
