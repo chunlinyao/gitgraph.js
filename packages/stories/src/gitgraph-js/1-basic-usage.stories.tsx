@@ -7,7 +7,6 @@ import {
   GraphContainer,
   hashPrefix,
 } from "../helpers";
-import { Orientation } from "@gitgraph/js";
 
 storiesOf("gitgraph-js/1. Basic usage", module)
   .add("default", () => (
@@ -417,7 +416,6 @@ storiesOf("gitgraph-js/1. Basic usage", module)
       {(graphContainer) => {
         const gitgraph = createGitgraph(graphContainer, {
           generateCommitHash: createFixedHashGenerator(),
-          orientation: Orientation.VerticalReverse,
         });
         const master = gitgraph.branch("master").commit("Initial commit");
         const develop = master.branch("develop")
@@ -430,6 +428,33 @@ storiesOf("gitgraph-js/1. Basic usage", module)
         develop.commit();
         master.merge(develop);
         master.merge(feat1)
+      }}
+    </GraphContainer>
+  ))
+  .add("test support octopus merge", () => (
+    <GraphContainer>
+      {(graphContainer) => {
+        const gitgraph = createGitgraph(graphContainer, {
+          generateCommitHash: createFixedHashGenerator(),
+        });
+        const master = gitgraph.branch("master");
+        master
+          .commit({ subject: "Initial commit" })
+          .commit({ subject: "Another commit" })
+          .commit({
+            subject: "Do something crazy",
+          });
+
+        const dev = master
+          .branch("dev")
+          .commit({
+            subject: "Oh my god",
+          })
+          .commit({
+            subject: "This is a saxo!",
+          });
+        const test = master.branch("test").commit("asdf").commit("cdef");
+        master.merge({branch: [dev, test], commitOptions : {subject: "some text"}});
       }}
     </GraphContainer>
   ));

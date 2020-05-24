@@ -117,30 +117,33 @@ class BranchesPathsCalculator<TNode> {
     );
 
     mergeCommits.forEach((mergeCommit) => {
-      const parentOnOriginBranch = this.commits.find(({ hash }) => {
-        return hash === mergeCommit.parents[1];
-      });
-      if (!parentOnOriginBranch) return;
+      mergeCommit.parents.slice(1).forEach( targetHash =>
+      {
+        const parentOnOriginBranch = this.commits.find(({ hash }) => {
+          return hash === targetHash;
+        });
+        if (!parentOnOriginBranch) return;
 
-      const originBranchName = parentOnOriginBranch.branches
-        ? parentOnOriginBranch.branches[0]
-        : "";
-      let branch = this.branches.get(originBranchName);
-
-      if (!branch) {
-        branch = this.getDeletedBranchInPath();
+        const originBranchName = parentOnOriginBranch.branches
+          ? parentOnOriginBranch.branches[0]
+          : "";
+        let branch = this.branches.get(originBranchName);
 
         if (!branch) {
-          // Still no branch? That's strange, we shouldn't set anything.
-          return;
-        }
-      }
+          branch = this.getDeletedBranchInPath();
 
-      const lastPoints = [...(this.branchesPaths.get(branch) || [])];
-      this.branchesPaths.set(branch, [
-        ...lastPoints,
-        { x: mergeCommit.x, y: mergeCommit.y, mergeCommit: true },
-      ]);
+          if (!branch) {
+            // Still no branch? That's strange, we shouldn't set anything.
+            return;
+          }
+        }
+
+        const lastPoints = [...(this.branchesPaths.get(branch) || [])];
+        this.branchesPaths.set(branch, [
+          ...lastPoints,
+          { x: mergeCommit.x, y: mergeCommit.y, mergeCommit: true },
+        ]);
+      });
     });
   }
 

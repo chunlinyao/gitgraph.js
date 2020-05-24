@@ -15,7 +15,7 @@ interface GitgraphMergeOptions<TNode> {
   /**
    * Branch or branch name.
    */
-  branch: string | BranchUserApi<TNode>;
+  branch: string | BranchUserApi<TNode> | Array<BranchUserApi<TNode>>;
   /**
    * If `true`, perform a fast-forward merge (if possible).
    */
@@ -133,26 +133,22 @@ class BranchUserApi<TNode> {
       commitOptions,
     } = options as GitgraphMergeOptions<TNode>;
 
-    const branchName = typeof branch === "string" ? branch : branch.name;
-    const branchLastCommitHash = this._graph.refs.getCommit(branchName);
-    if (!branchLastCommitHash) {
-      throw new Error(`The branch called "${branchName}" is unknown`);
-    }
-
-    let canFastForward = false;
-    if (fastForward) {
-      const lastCommitHash = this._graph.refs.getCommit(this._branch.name);
-      if (lastCommitHash) {
-        canFastForward = this._areCommitsConnected(
-          lastCommitHash,
-          branchLastCommitHash,
-        );
-      }
-    }
-
-    if (fastForward && canFastForward) {
-      this._fastForwardTo(branchLastCommitHash);
-    } else {
+    if (branch instanceof Array) {
+      let branchName = "";
+      let branchLastCommitHash: Array<string> = [];
+      branch.forEach(b => {
+        const bn = typeof b === "string" ? b : b.name;
+        const bh = this._graph.refs.getCommit(bn);
+  
+        if (!branchLastCommitHash) {
+          throw new Error(`The branch called "${bn}" is unknown`);
+        }
+        branchName += bn + " ";
+        if (bh) {
+          branchLastCommitHash.push(bh);
+        }
+      });
+      
       this._commitWithParents(
         {
           ...commitOptions,
@@ -160,10 +156,42 @@ class BranchUserApi<TNode> {
             (commitOptions && commitOptions.subject) ||
             `Merge branch ${branchName}`,
         },
-        [branchLastCommitHash],
+        branchLastCommitHash,
       );
+    } else {
+      const branchName = typeof branch === "string" ? branch : branch.name;
+      const branchLastCommitHash = this._graph.refs.getCommit(branchName);
+      if (!branchLastCommitHash) {
+        throw new Error(`The branch called "${branchName}" is unknown`);
+      }
+  
+      let canFastForward = false;
+      if (fastForward) {
+        const lastCommitHash = this._graph.refs.getCommit(this._branch.name);
+        if (lastCommitHash) {
+          canFastForward = this._areCommitsConnected(
+            lastCommitHash,
+            branchLastCommitHash,
+          );
+        }
+      }
+  
+      if (fastForward && canFastForward) {
+        this._fastForwardTo(branchLastCommitHash);
+      } else {
+        this._commitWithParents(
+          {
+            ...commitOptions,
+            subject:
+              (commitOptions && commitOptions.subject) ||
+              `Merge branch ${branchName}`,
+          },
+          [branchLastCommitHash],
+        );
+      }
+  
     }
-
+    
     this._onGraphUpdate();
     return this;
   }
