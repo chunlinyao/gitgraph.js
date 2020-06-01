@@ -372,4 +372,38 @@ storiesOf("gitgraph-react/1. Basic usage", module)
         }}
       </Gitgraph>
     );
+  })
+  .add("test my order", () => {
+    const branchesOrder = ["feat1", "develop", "master"];
+
+    const compareBranchesOrder = (a: Branch["name"], b: Branch["name"]) =>
+      branchesOrder.indexOf(a) - branchesOrder.indexOf(b);
+
+    return (
+      <Gitgraph
+        options={{
+          generateCommitHash: createFixedHashGenerator(),
+        }}
+      >
+        {(gitgraph) => {
+ var branch0 = gitgraph.branch("branch0");
+ branch0.commit({message: "100009 null", renderDot: renderMyNode, dotText: "1"});
+
+ branch0.commit({message: "100013 图书馆查证", renderDot: renderMyNode, dotText: "2"});
+
+ var branch2 = branch0.branch("branch2");
+ branch0.commit({message: "100016 课题负责人审核", renderDot: renderMyNode, dotText: "3"});
+
+ branch2.merge({branch: [branch0], commitOptions : {message: "100014 科技处审批", renderDot: renderMyNode, dotText:"4"}});
+
+ var branch1 = branch2.branch("branch1");
+ branch0.commit({message: "100020 分管院长审批", renderDot: renderMyNode, dotText: "5"});
+
+ branch1.merge({branch: [branch0], commitOptions : {message: "100019 财务审批", renderDot: renderMyNode, dotText:"6"}});
+
+ branch0.commit({message: "100010 null", renderDot: renderMyNode, dotText: "7"});
+
+        }}
+      </Gitgraph>
+    );
   });

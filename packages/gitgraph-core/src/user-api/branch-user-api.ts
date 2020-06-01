@@ -135,7 +135,7 @@ class BranchUserApi<TNode> {
 
     if (branch instanceof Array) {
       let branchName = "";
-      let branchLastCommitHash: Array<string> = [];
+      const branchLastCommitHash: string[] = [];
       branch.forEach(b => {
         const bn = typeof b === "string" ? b : b.name;
         const bh = this._graph.refs.getCommit(bn);
@@ -166,7 +166,7 @@ class BranchUserApi<TNode> {
       }
   
       let canFastForward = false;
-      if (fastForward) {
+      /*if (fastForward) {
         const lastCommitHash = this._graph.refs.getCommit(this._branch.name);
         if (lastCommitHash) {
           canFastForward = this._areCommitsConnected(
@@ -175,6 +175,7 @@ class BranchUserApi<TNode> {
           );
         }
       }
+      */
   
       if (fastForward && canFastForward) {
         this._fastForwardTo(branchLastCommitHash);
